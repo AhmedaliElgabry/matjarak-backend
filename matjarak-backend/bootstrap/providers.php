@@ -5,6 +5,7 @@ return [
      * Application service providers.
      */
     App\Providers\AppServiceProvider::class,
+    App\Providers\MultiTenantServiceProvider::class, // ← ADD THIS LINE
 
     /**
      * Webkul's service providers.

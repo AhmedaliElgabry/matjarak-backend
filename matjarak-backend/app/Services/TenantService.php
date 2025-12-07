@@ -13,7 +13,18 @@ class TenantService
     public static function getChannelByHostname($hostname)
     {
         return Cache::remember("channel:hostname:{$hostname}", 3600, function () use ($hostname) {
-            return Channel::where('hostname', $hostname)->first();
+            // 1. Try exact match (e.g. "seller1.localhost:8000")
+            $channel = \Webkul\Core\Models\Channel::where('hostname', $hostname)->first();
+            
+            if ($channel) return $channel;
+
+            // 2. Try match with http:// prefix (Bagisto default often includes this)
+            $channel = \Webkul\Core\Models\Channel::where('hostname', 'http://' . $hostname)->first();
+
+            if ($channel) return $channel;
+
+            // 3. Try match with https:// prefix
+            return \Webkul\Core\Models\Channel::where('hostname', 'https://' . $hostname)->first();
         });
     }
 

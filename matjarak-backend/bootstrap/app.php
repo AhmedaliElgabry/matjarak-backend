@@ -10,22 +10,18 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
-            Route::middleware('web')
-                ->group(base_path('routes/super-admin.php'));
+            Route::middleware('web')->group(base_path('routes/super-admin.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'super_admin' => \App\Http\Middleware\SuperAdmin::class,
-            'validate_tenant' => \App\Http\Middleware\ValidateTenantAccess::class,
-            'seller_only' => \App\Http\Middleware\SellerOnly::class,
+            'initialize_channel' => \App\Http\Middleware\InitializeChannelContext::class,
         ]);
 
-        // Apply tenant validation to ALL admin routes
-        $middleware->group('admin', [
-            'web',
-            'admin',
-            'validate_tenant', // CRITICAL: Validates tenant access
+        // Apply channel initialization to ALL admin routes
+        $middleware->appendToGroup('admin', [
+            'initialize_channel',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
