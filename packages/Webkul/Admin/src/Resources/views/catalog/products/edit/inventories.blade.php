@@ -1,7 +1,19 @@
+@php
+    // SAAS LOGIC: Filter Inventory Sources
+    $currentUser = auth()->guard('admin')->user();
+    
+    if ($currentUser->isSuperAdmin()) {
+        // Super Admin sees ALL active inventory sources
+        $inventorySources = app(\Webkul\Inventory\Repositories\InventorySourceRepository::class)->findWhere(['status' => 1]);
+    } else {
+        // Seller sees ONLY inventory sources assigned to their specific Channel
+        $inventorySources = $currentUser->channel ? $currentUser->channel->inventory_sources : collect([]);
+    }
+@endphp
+
 {!! view_render_event('bagisto.admin.catalog.product.edit.form.inventories.controls.before', ['product' => $product]) !!}
 
 <v-inventories>
-    <!-- Panel Content -->
     <div class="mb-5 text-sm text-gray-600 dark:text-gray-300">
         <div class="relative mb-2.5 flex items-center">
             <span class="inline-block rounded-full bg-yellow-500 p-1.5 ltr:mr-1.5 rtl:ml-1.5"></span>
@@ -18,7 +30,8 @@
         </div>
     </div>
 
-    @foreach (app(\Webkul\Inventory\Repositories\InventorySourceRepository::class)->findWhere(['status' => 1]) as $inventorySource)
+    {{-- UPDATED LOOP: Uses the filtered $inventorySources variable --}}
+    @foreach ($inventorySources as $inventorySource)
         @php
             $qty = old('inventories[' . $inventorySource->id . ']')
                 ?: ($product->inventories->where('inventory_source_id', $inventorySource->id)->pluck('qty')->first() ?? 0);

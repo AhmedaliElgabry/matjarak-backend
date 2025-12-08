@@ -15,7 +15,9 @@ class GenerateDatabaseSchema extends Command
     {
         $this->info('🔍 Analyzing database structure...');
         
-        $output = $this->getOption('output');
+        // FIX: Changed getOption() to option()
+        $output = $this->option('output');
+        
         $databaseName = config('database.connections.mysql.database');
         
         $content = $this->generateSchemaDocumentation($databaseName);

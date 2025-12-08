@@ -158,12 +158,16 @@ class SellerService
 
     protected function createAdminUser(array $data, $channel)
     {
-        // CRITICAL FIX: Create admin using raw DB insert and force channel_id twice
+        // ==========================================
+        // SAAS UPDATE: Assign 'Seller' Role (ID: 3)
+        // ==========================================
+        
         $adminId = DB::table('admins')->insertGetId([
             'name' => $data['admin_name'],
             'email' => $data['admin_email'],
             'password' => Hash::make($data['admin_password']),
-            'role_id' => 1,
+            'role_id' => 3,       // <--- CHANGED: 1 (Admin) to 3 (Seller)
+            'role' => 'seller',   // <--- ADDED: To match the 'role' column we added
             'channel_id' => $channel->id,
             'status' => 1,
             'image' => null,
@@ -171,12 +175,15 @@ class SellerService
             'updated_at' => now(),
         ]);
 
-        // DOUBLE CHECK: Force update channel_id again to ensure it's set
+        // DOUBLE CHECK: Force update channel_id and role again
         DB::table('admins')
             ->where('id', $adminId)
-            ->update(['channel_id' => $channel->id]);
+            ->update([
+                'channel_id' => $channel->id,
+                'role' => 'seller'
+            ]);
 
-        Log::info("Admin created with ID: $adminId for channel: {$channel->id}");
+        Log::info("Admin created with ID: $adminId for channel: {$channel->id} as Seller");
 
         return Admin::find($adminId);
     }

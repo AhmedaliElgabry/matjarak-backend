@@ -72,7 +72,8 @@ return [
 
         'admins' => [
             'driver' => 'eloquent',
-            'model'  => Webkul\User\Models\Admin::class,
+            // UPDATE: Changed from Webkul\User\Models\Admin::class to your custom model
+            'model'  => App\Models\Admin::class,
         ],
     ],
 
