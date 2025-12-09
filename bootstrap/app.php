@@ -14,17 +14,14 @@ return Application::configure(basePath: dirname(__DIR__))
         }
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Register Aliases
         $middleware->alias([
             'super_admin' => \App\Http\Middleware\SuperAdmin::class,
             'initialize_channel' => \App\Http\Middleware\InitializeChannelContext::class,
         ]);
 
-        // Add the EnforceChannelAccess middleware to the 'admin' group
-        // This ensures it runs for all admin routes
+        // Apply channel initialization to ALL admin routes
         $middleware->appendToGroup('admin', [
             'initialize_channel',
-            \App\Http\Middleware\EnforceChannelAccess::class, // <--- ADDED THIS LINE
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -123,29 +123,9 @@ class ProductController extends Controller
 
         session()->flash('success', trans('admin::app.catalog.products.create-success'));
 
-        // FIX: Get current channel and locale to maintain context in redirect
-        $currentChannel = core()->getRequestedChannel();
-        $currentLocale = core()->getRequestedLocale();
-        
-        // Fallback to defaults if context is missing
-        if (empty($currentChannel)) {
-            $currentChannel = core()->getDefaultChannel();
-        }
-        if (empty($currentLocale)) {
-            $currentLocale = core()->getDefaultLocale();
-        }
-        
-        // Build redirect URL with channel and locale parameters to maintain context
-        $redirectUrl = route('admin.catalog.products.edit', [
-            'id' => $product->id,
-        ]) . '?' . http_build_query([
-            'channel' => $currentChannel->code,
-            'locale' => $currentLocale->code,
-        ]);
-
         return new JsonResponse([
             'data' => [
-                'redirect_url' => $redirectUrl,
+                'redirect_url' => route('admin.catalog.products.edit', $product->id),
             ],
         ]);
     }
@@ -158,19 +138,6 @@ class ProductController extends Controller
     public function edit(int $id)
     {
         $product = $this->productRepository->findOrFail($id);
-
-        // FIX: Ensure channel and locale context is established
-        // If not in URL, redirect with proper parameters
-        if (!request()->has('channel') || !request()->has('locale')) {
-            $currentChannel = core()->getRequestedChannel() ?? core()->getDefaultChannel();
-            $currentLocale = core()->getRequestedLocale() ?? core()->getDefaultLocale();
-            
-            return redirect()->route('admin.catalog.products.edit', [
-                'id' => $id,
-                'channel' => $currentChannel->code,
-                'locale' => $currentLocale->code,
-            ]);
-        }
 
         return view('admin::catalog.products.edit', compact('product'));
     }
@@ -190,15 +157,7 @@ class ProductController extends Controller
 
         session()->flash('success', trans('admin::app.catalog.products.update-success'));
 
-        // FIX: Maintain context in redirect after update
-        $channel = request()->get('channel', core()->getRequestedChannel()->code);
-        $locale = request()->get('locale', core()->getRequestedLocale()->code);
-        
-        return redirect()->route('admin.catalog.products.edit', [
-            'id' => $id,
-            'channel' => $channel,
-            'locale' => $locale,
-        ]);
+        return redirect()->route('admin.catalog.products.index');
     }
 
     /**
